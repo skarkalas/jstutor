@@ -66,8 +66,8 @@ function setCodeMirrorVal(dat) {
 
 
 $(document).ready(function() {
-
-  $("#embedLinkDiv").hide();
+    
+  //$("#embedLinkDiv").hide();
 
   pyInputCodeMirror = CodeMirror(document.getElementById('codeInputPane'), {
     mode: 'javascript',
@@ -88,9 +88,10 @@ $(document).ready(function() {
     appMode = $.bbq.getState('mode'); // assign this to the GLOBAL appMode
 
     if (appMode === undefined || appMode == 'edit') {
-      $("#pyInputPane").show();
+      $("#pyInputPane").hide();
       $("#pyOutputPane").hide();
-      $("#embedLinkDiv").hide();
+      $('#executeBtn').hide();
+      //$("#embedLinkDiv").hide();
 
       // destroy all annotation bubbles (NB: kludgy)
       if (myVisualizer) {
@@ -100,8 +101,9 @@ $(document).ready(function() {
     else if (appMode == 'display') {
       $("#pyInputPane").hide();
       $("#pyOutputPane").show();
+      $("#progressbar").hide();
 
-      $("#embedLinkDiv").show();
+      //$("#embedLinkDiv").show();
 
       $('#executeBtn').html("Visualize execution");
       $('#executeBtn').attr('disabled', false);
@@ -112,10 +114,10 @@ $(document).ready(function() {
       myVisualizer.updateOutput();
 
       // customize edit button click functionality AFTER rendering (NB: awkward!)
-      $('#pyOutputPane #editCodeLinkDiv').show();
-      $('#pyOutputPane #editBtn').click(function() {
-        enterEditMode();
-      });
+      //$('#pyOutputPane #editCodeLinkDiv').show();
+      //$('#pyOutputPane #editBtn').click(function() {
+      //  enterEditMode();
+      //});
     }
     else {
       assert(false);
@@ -444,15 +446,17 @@ $(document).ready(function() {
   });
 
 
-  // handle hash parameters passed in when loading the page
+ // handle hash parameters passed in when loading the page
+ /*
   preseededCode = $.bbq.getState('code');
-  if (preseededCode) {
+    if (preseededCode) {
     setCodeMirrorVal(preseededCode);
   }
   else {
     // select a canned example on start-up:
     $("#aliasExampleLink").trigger('click');
   }
+*/
 
   appMode = $.bbq.getState('mode'); // assign this to the GLOBAL appMode
   if ((appMode == "display") && preseededCode /* jump to display only with pre-seeded code */) {
@@ -513,5 +517,26 @@ $(document).ready(function() {
     var iframeStr = '<iframe width="800" height="500" frameborder="0" src="' + embedUrlStr + '"> </iframe>';
     $('#embedCodeOutput').val(iframeStr);
   });
+
+	//get the code from the parent
+	function receiveMessage(event)
+	{
+		// Do we trust the sender of this message?
+		if (event.origin !== "https://dl.dropboxusercontent.com")
+		{
+			alert("wrong origin");
+			return;
+		}
+		
+		var code = event.data;
+		setCodeMirrorVal(code);
+		$("#executeBtn").trigger('click');
+	}
+
+	//enable communication with the parent
+	window.addEventListener("message", receiveMessage, false);
+
+	//inform the parent that the visualiser is ready
+	window.opener.postMessage("jtutor:ok", "https://dl.dropboxusercontent.com");
 });
 

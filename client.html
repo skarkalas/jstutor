@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<script>
+
+var popup = null;
+	
+function test()
+{
+	//create a popup window pointing at the service
+	popup = window.open('http://192.168.1.20', '_blank', "width=1000,height=800");
+}
+
+//define message handler (the service sends a message after the popup is ready to be used)
+function receiveMessage(event)
+{
+	//if the origin of the message is not what is expected stop
+	if (event.origin !== "http://192.168.1.20")
+	{
+		alert('wrong origin');
+		return;
+	}
+
+	//get the message
+	var message = event.data;
+	
+	//prepare the code
+	var code = 'var x = 4;\nvar y = 6;\nvar z = x + y;';
+
+	//if the message says that the service is available post a new message with the code
+	if(message === 'jtutor:ok')
+	{
+		popup.postMessage(code, "http://192.168.1.20");
+	}
+}
+
+//apparently the address 192.168.1.20 needs to be changed to whatever address is being used by the service
+
+window.addEventListener("message", receiveMessage, false);
+
+</script>
+
+</head>
+
+<body>
+
+<button onclick="test()">test</button>
+
+</body>
+</html>
